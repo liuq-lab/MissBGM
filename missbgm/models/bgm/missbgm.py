@@ -109,7 +109,7 @@ class MissBGM(BGM):
             batch_x = tf.gather(data_x, batch_indices, axis=0)
             loss_px_z = tf.reduce_mean(self._generator_nll(batch_z, batch_x, training=False)[0])
             loss_prior_z = tf.reduce_mean(0.5 * tf.reduce_sum(batch_z ** 2, axis=1))
-            loss = loss_px_z + loss_prior_z
+            loss = (loss_px_z + loss_prior_z)/self.params["x_dim"]
 
         gradients = tape.gradient(loss, data_z)
         gradients = self._clip_gradient(gradients, self.posterior_params["clip_grad_norm"])
@@ -130,7 +130,7 @@ class MissBGM(BGM):
             batch_x = tf.gather(data_x, batch_indices, axis=0)
             loss_px_z = tf.reduce_mean(self._generator_nll(batch_z, batch_x, training=False)[0])
             loss_pr_x = tf.reduce_mean(self._mask_nll(batch_x, mask, training=False))
-            loss = loss_px_z + self.params["beta"] * loss_pr_x
+            loss = (loss_px_z + self.params["beta"] * loss_pr_x)/self.params["x_dim"]
 
         gradients = tape.gradient(loss, data_x)
         gradients = self._clip_gradient(gradients, self.posterior_params["clip_grad_norm"], batch_mask=mask)
@@ -148,7 +148,7 @@ class MissBGM(BGM):
             loss_x = tf.reduce_mean(loss_x)
             if self.params["use_bnn"]:
                 loss_x += sum(self.g_net.losses) * self.params["kl_weight"]
-
+            loss_x /= self.params["x_dim"]
         gradients = tape.gradient(loss_x, self.g_net.trainable_variables)
         self.g_optimizer.apply_gradients(zip(gradients, self.g_net.trainable_variables))
         return loss_x, loss_mse
@@ -159,7 +159,7 @@ class MissBGM(BGM):
             loss_r_x = tf.reduce_mean(self._mask_nll(data_x, mask, training=True))
             if self.params["use_bnn"]:
                 loss_r_x += sum(self.phi_net.losses) * self.params["kl_weight"]
-
+            loss_r_x /= self.params["x_dim"]
         gradients = tape.gradient(loss_r_x, self.phi_net.trainable_variables)
         self.phi_optimizer.apply_gradients(zip(gradients, self.phi_net.trainable_variables))
         return loss_r_x
@@ -308,8 +308,6 @@ class MissBGM(BGM):
         x_obs: np.ndarray,
         mask: np.ndarray,
         epochs: int,
-        z_map_steps: int,
-        x_map_steps: int,
         x_true: Optional[np.ndarray] = None,
         x_true_original: Optional[np.ndarray] = None,
         inverse_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,

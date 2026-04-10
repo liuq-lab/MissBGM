@@ -123,7 +123,7 @@ def run_real_experiment(params: dict, missing_rate: float = 0.2, seed: int = 123
     x_obs_norm = benchmark["x_obs_norm"]
     mask = benchmark["mask"]
 
-    model = BGM_MNAR(params, random_seed=None)
+    model = BGM_MNAR(params, random_seed=42)
     model.fit(data=x_obs_norm, mask=mask, x_true=x_full_norm, verbose=1)
 
     training_history = pd.DataFrame(model.training_history_)
@@ -149,9 +149,7 @@ def run_real_experiment(params: dict, missing_rate: float = 0.2, seed: int = 123
         "epochs": int(params["epochs"]),
         "best_epoch_metric": metric_col,
         "best_epoch": best_epoch,
-        "best_epoch_metric_value": float(best_row[metric_col]),
         "lowest_rmse_normalized": float(best_row[metric_col]),
-        "final_rmse_normalized": float(training_history.iloc[-1][metric_col]),
         "training_history_csv": str(history_path),
     }
     _write_json(summary_path, summary)
