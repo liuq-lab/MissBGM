@@ -5,7 +5,7 @@ save_res: false
 use_bnn: false
 x_dim: 8
 z_dim: 5
-batch_size: 8
+batch_size: 16
 epochs: 200
 epochs_per_eval: 5
 lr: 0.002
