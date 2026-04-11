@@ -53,6 +53,8 @@ def prepare_masked_data(
         return x_obs, resolved_mask
     if initialization == "mean":
         return mean_impute(x_obs, resolved_mask), resolved_mask
+    if initialization == "knn":
+        return knn_impute(x_obs, resolved_mask), resolved_mask
     if initialization == "missforest":
         return missforest_imputation_baseline(x_obs, resolved_mask, random_state=random_state), resolved_mask
     raise ValueError(f"Unsupported initialization strategy: {initialization}")
@@ -86,6 +88,13 @@ def apply_mask(data: np.ndarray, mask: np.ndarray, missing_value: float = np.nan
 def observed_feature_index_list(mask: np.ndarray) -> List[List[int]]:
     resolved_mask = validate_mask(mask)
     return [np.flatnonzero(row).astype(np.int32).tolist() for row in resolved_mask]
+
+
+def knn_impute(data: np.ndarray, mask: np.ndarray, n_neighbors: int = 5) -> np.ndarray:
+    x_obs, resolved_mask = prepare_masked_data(data, mask)
+    masked = np.where(resolved_mask == 1.0, x_obs, np.nan).astype(np.float32)
+    filled = KNNImputer(n_neighbors=int(n_neighbors)).fit_transform(masked).astype(np.float32)
+    return reconstruct_from_mask(x_obs, resolved_mask, filled)
 
 
 def mean_impute(data: np.ndarray, mask: np.ndarray, fill_values: Optional[np.ndarray] = None) -> np.ndarray:

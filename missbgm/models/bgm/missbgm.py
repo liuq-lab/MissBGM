@@ -206,7 +206,7 @@ class MissBGM(BGM):
         verbose: int = 1,
     ) -> "MissBGM":
         self.train_data = np.array(data, copy=True)
-        x_obs, resolved_mask = prepare_masked_data(data, mask=mask, initialization="mean")
+        x_obs, resolved_mask = prepare_masked_data(data, mask=mask, initialization="knn")
 
         if x_obs.shape[1] != self.params["x_dim"]:
             raise ValueError(f"Expected feature dimension {self.params['x_dim']}, received {x_obs.shape[1]}.")
