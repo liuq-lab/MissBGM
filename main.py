@@ -125,6 +125,21 @@ def run_real_experiment(params: dict, missing_rate: float = 0.2, seed: int = 123
 
     model = BGM_MNAR(params, random_seed=42)
     model.fit(data=x_obs_norm, mask=mask, x_true=x_full_norm, verbose=1)
+    mcmc_imputed, intervals = model.predict(
+        data=x_obs_norm,
+        mask=mask,
+        x_true=x_full_norm,
+        alpha=0.05,
+        n_mcmc=3000, 
+        burn_in=3000, 
+        step_size=0.1, 
+        num_leapfrog_steps=10, 
+        seed=42,
+        verbose=1
+    )
+    if model.last_prediction_ is None:
+        raise RuntimeError("MissBGM.predict() did not populate prediction diagnostics.")
+    map_imputed = model.last_prediction_["map_imputed"]
 
     training_history = pd.DataFrame(model.training_history_)
     result_dir.mkdir(parents=True, exist_ok=True)
@@ -133,6 +148,7 @@ def run_real_experiment(params: dict, missing_rate: float = 0.2, seed: int = 123
     np.save(result_dir / "mask.npy", mask.astype(np.float32))
     np.save(result_dir / "x_full_norm.npy", x_full_norm.astype(np.float32))
     np.save(result_dir / "x_obs_norm.npy", x_obs_norm.astype(np.float32))
+    np.savez(result_dir / "intervals.npz", intervals=np.array(intervals, dtype=object))
 
     metric_col = "rmse_missing_only"
     best_row = training_history.sort_values([metric_col, "epoch"], kind="stable").iloc[0]
@@ -150,6 +166,8 @@ def run_real_experiment(params: dict, missing_rate: float = 0.2, seed: int = 123
         "best_epoch_metric": metric_col,
         "best_epoch": best_epoch,
         "lowest_rmse_normalized": float(best_row[metric_col]),
+        "mcmc_rmse": rmse_on_missing_entries(x_full_norm, mcmc_imputed, mask),
+        "map_rmse": rmse_on_missing_entries(x_full_norm, map_imputed, mask),
         "training_history_csv": str(history_path),
     }
     _write_json(summary_path, summary)
@@ -163,7 +181,7 @@ if __name__ == "__main__":
     parser.add_argument("--force", action="store_true", help="rerun even if cached outputs exist")
     args = parser.parse_args()
 
-    configure_cpu_only()
+    #configure_cpu_only()
 
     with open(args.config, "r", encoding="utf-8") as handle:
         params = yaml.safe_load(handle)

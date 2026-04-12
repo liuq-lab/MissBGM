@@ -6,7 +6,7 @@ use_bnn: false
 x_dim: 13
 z_dim: 5
 batch_size: 16
-epochs: 500
+epochs: 120
 epochs_per_eval: 5
 lr: 0.002
 lr_theta: 0.001
@@ -20,8 +20,8 @@ kl_weight: 0.00005
 n_inner_steps: 10
 g_d_freq: 1
 seed: 123
-g_units: [120, 120, 120, 120, 120]
-e_units: [120, 120, 120, 120, 120]
+g_units: [120, 120, 120]
+e_units: [120, 120, 120]
 dz_units: [64, 32, 8]
 dx_units: [64, 32, 8]
 missingness_units: [64, 64]

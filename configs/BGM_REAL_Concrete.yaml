@@ -6,7 +6,7 @@ use_bnn: false
 x_dim: 8
 z_dim: 5
 batch_size: 16
-epochs: 200
+epochs: 100
 epochs_per_eval: 5
 lr: 0.002
 lr_theta: 0.001
