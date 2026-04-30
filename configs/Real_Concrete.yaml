@@ -6,7 +6,7 @@ use_bnn: false
 x_dim: 8
 z_dim: 5
 batch_size: 16
-epochs: 500
+epochs: 200
 epochs_per_eval: 5
 lr: 0.002
 lr_theta: 0.005
@@ -14,7 +14,7 @@ lr_phi: 0.005
 lr_z: 0.002
 lr_x: 0.002
 alpha: 0.0
-beta: 0.1
+beta: 0.01
 gamma: 0.0
 kl_weight: 0.00005
 n_inner_steps: 3
