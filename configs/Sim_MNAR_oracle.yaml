@@ -1,32 +1,26 @@
-dataset: Synthetic_MNAR
-output_dir: .
-save_model: false
-save_res: false
-use_bnn: false
-n_samples: 5000
-x_dim: 50
+dataset: Sim_MNAR_oracle
+save_dir: results/Sim_MNAR_oracle
 z_dim: 5
-missing_rate: 0.2
-batch_size: 16
+x_dim: 50
+n_samples: 500
+missing_rate: 0.5
 epochs: 50
-epochs_per_eval: 2
-lr: 0.002
+batch_size: 16
+beta: 0.01
+g_units: [120, 120, 120, 120, 120]
+missingness_units: [64, 64]
 lr_theta: 0.005
 lr_phi: 0.005
 lr_z: 0.002
 lr_x: 0.002
-alpha: 0.0
-beta: 0.01
-gamma: 0.0
-kl_weight: 0.00005
 n_inner_steps: 3
-g_d_freq: 1
-seed: 123
-g_units: [120, 120, 120, 120, 120]
+lr: 0.002
+epochs_per_eval: 5
+use_bnn: false
+kl_weight: 0.00005
 e_units: [120, 120, 120, 120, 120]
 dz_units: [64, 32, 8]
 dx_units: [64, 32, 8]
-missingness_units: [64, 64]
 egm_init:
   enabled: true
   n_iter: 1500

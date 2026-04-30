@@ -1,30 +1,23 @@
 dataset: Concrete
-output_dir: .
-save_model: false
-save_res: false
-use_bnn: false
-x_dim: 8
+save_dir: results/Real_Concrete
 z_dim: 5
-batch_size: 16
 epochs: 200
-epochs_per_eval: 5
-lr: 0.002
+batch_size: 16
+beta: 0.01
+g_units: [120, 120, 120, 120, 120]
+missingness_units: [64, 64]
 lr_theta: 0.005
 lr_phi: 0.005
 lr_z: 0.002
 lr_x: 0.002
-alpha: 0.0
-beta: 0.01
-gamma: 0.0
-kl_weight: 0.00005
 n_inner_steps: 3
-g_d_freq: 1
-seed: 123
-g_units: [120, 120, 120, 120, 120]
+lr: 0.002
+epochs_per_eval: 5
+use_bnn: false
+kl_weight: 0.00005
 e_units: [120, 120, 120, 120, 120]
 dz_units: [64, 32, 8]
 dx_units: [64, 32, 8]
-missingness_units: [64, 64]
 egm_init:
   enabled: true
   n_iter: 1500
