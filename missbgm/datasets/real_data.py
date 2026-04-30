@@ -32,15 +32,7 @@ DATASET_REGISTRY: Dict[str, dict] = {
         "features": 8,
         "num_categorical_or_binary_features": 0,
         "notes": ["Uses Concrete_Data.xls. Drops the target strength column and keeps the 8 numeric predictors."],
-    },
-    "Libras": {
-        "uci_id": 181,
-        "slug": "libras+movement",
-        "raw_dir_name": "Libras",
-        "features": 90,
-        "num_categorical_or_binary_features": 0,
-        "notes": ["Uses movement_libras.data. Drops the final class label column and keeps 90 numeric features."],
-    },
+    }
     "Breast": {
         "uci_id": 15,
         "slug": "breast+cancer+wisconsin+original",
@@ -53,43 +45,25 @@ DATASET_REGISTRY: Dict[str, dict] = {
             "Rows with native '?' values are removed before simulating new MNAR missingness.",
         ],
     },
-    "Superconductivity": {
-        "uci_id": 464,
-        "slug": "superconductivty+data",
-        "raw_dir_name": "Superconductivity",
-        "features": 81,
+    "Gisette": {
+        "uci_id": 170,
+        "slug": "gisette",
+        "raw_dir_name": "Gisette",
+        "features": 5000,
         "num_categorical_or_binary_features": 0,
-        "notes": ["Uses train.csv. Drops the target critical temperature column and keeps 81 numeric features."],
-    },
-    "GasSensorDrift": {
-        "uci_id": 224,
-        "slug": "gas+sensor+array+drift+dataset",
-        "raw_dir_name": "GasSensorDrift",
-        "features": 128,
-        "num_categorical_or_binary_features": 0,
-        "notes": ["Parses the 10 libsvm-style batch*.dat files into a dense 128-feature matrix."],
-    },
-    "HAR_AAL": {
-        "uci_id": 364,
-        "slug": "smartphone+dataset+for+human+activity+recognition+har+in+ambient+assisted+living+aal",
-        "raw_dir_name": "HAR_AAL",
-        "features": 561,
-        "num_categorical_or_binary_features": 0,
-        "notes": ["Stacks dataset_uci/final_X_train.txt and final_X_test.txt into one 561-feature matrix."],
+        "notes": [
+            "Uses gisette_train.data, gisette_valid.data, and gisette_test.data from the GISETTE archive.",
+            "Stacks train, validation, and unlabeled test splits to form the full 13500-row feature matrix.",
+            "Keeps the 5000 integer-valued features as numeric inputs.",
+        ],
     },
 }
 
 DATASET_ALIASES = {
-    "breastoriginal": "Breast",
     "breast": "Breast",
     "wine": "Wine",
     "concrete": "Concrete",
-    "libras": "Libras",
-    "superconductivity": "Superconductivity",
-    "gassensordrift": "GasSensorDrift",
-    "har_aal": "HAR_AAL",
-    "har-aal": "HAR_AAL",
-    "haraal": "HAR_AAL",
+    "gisette": "Gisette",
 }
 
 
@@ -162,14 +136,6 @@ def _load_concrete(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, d
     return x, y, df.columns[:-1].tolist(), {"dropped_rows": 0}
 
 
-def _load_libras(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
-    df = pd.read_csv(extracted_dir / "movement_libras.data", header=None)
-    x = df.iloc[:, :-1].to_numpy(dtype=np.float32)
-    y = df.iloc[:, -1].to_numpy(dtype=np.float32)
-    feature_names = [f"feature_{i + 1}" for i in range(x.shape[1])]
-    return x, y, feature_names, {"dropped_rows": 0}
-
-
 def _load_breast(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
     df = pd.read_csv(extracted_dir / "breast-cancer-wisconsin.data", header=None, na_values=["?"])
     before = len(df)
@@ -191,70 +157,30 @@ def _load_breast(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dic
     return x, y, feature_names, {"dropped_rows": int(dropped), "native_missing_rows_removed": int(dropped)}
 
 
-def _load_superconductivity(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
-    df = pd.read_csv(extracted_dir / "train.csv")
-    x = df.iloc[:, :-1].to_numpy(dtype=np.float32)
-    y = df.iloc[:, -1].to_numpy(dtype=np.float32)
-    return x, y, df.columns[:-1].tolist(), {"dropped_rows": 0}
-
-
-def _parse_libsvm_dense(path: Path, n_features: int) -> Tuple[np.ndarray, np.ndarray]:
-    rows = []
-    labels = []
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            tokens = line.split()
-            labels.append(float(tokens[0]))
-            row = np.zeros(n_features, dtype=np.float32)
-            for token in tokens[1:]:
-                index_text, value_text = token.split(":", 1)
-                row[int(index_text) - 1] = np.float32(value_text)
-            rows.append(row)
-    return np.vstack(rows).astype(np.float32), np.asarray(labels, dtype=np.float32)
-
-
-def _load_gas_sensor_drift(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
-    batch_dir = extracted_dir / "Dataset"
-    batch_paths = sorted(batch_dir.glob("batch*.dat"), key=lambda path: int(re.findall(r"\d+", path.stem)[0]))
-    x_parts = []
-    y_parts = []
-    for batch_path in batch_paths:
-        x_batch, y_batch = _parse_libsvm_dense(batch_path, n_features=128)
-        x_parts.append(x_batch)
-        y_parts.append(y_batch)
-    x = np.vstack(x_parts).astype(np.float32)
-    y = np.concatenate(y_parts).astype(np.float32)
-    feature_names = [f"sensor_feature_{i + 1}" for i in range(x.shape[1])]
-    return x, y, feature_names, {"dropped_rows": 0, "num_batches": len(batch_paths)}
-
-
-def _load_har_aal(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
-    dataset_dir = extracted_dir / "dataset_uci"
-    x_train = np.loadtxt(dataset_dir / "final_X_train.txt", dtype=np.float32, delimiter=",")
-    x_test = np.loadtxt(dataset_dir / "final_X_test.txt", dtype=np.float32, delimiter=",")
-    y_train = np.loadtxt(dataset_dir / "final_y_train.txt", dtype=np.float32)
-    y_test = np.loadtxt(dataset_dir / "final_y_test.txt", dtype=np.float32)
-    x = np.vstack([x_train, x_test]).astype(np.float32)
-    y = np.concatenate([y_train, y_test]).astype(np.float32)
-    features_path = dataset_dir / "features.txt"
-    if features_path.exists():
-        feature_names = pd.read_csv(features_path, header=None, sep=r"\s+", names=["index", "name"])["name"].tolist()
-    else:
-        feature_names = [f"feature_{i + 1}" for i in range(x.shape[1])]
+def _load_gisette(extracted_dir: Path) -> Tuple[np.ndarray, np.ndarray, list, dict]:
+    gisette_dir = extracted_dir / "GISETTE"
+    parts, labels = [], []
+    for data_file, label_file in [
+        (gisette_dir / "gisette_train.data", gisette_dir / "gisette_train.labels"),
+        (gisette_dir / "gisette_valid.data", extracted_dir / "gisette_valid.labels"),
+    ]:
+        x_part = np.loadtxt(data_file, dtype=np.float32)
+        parts.append(x_part)
+        labels.append(np.loadtxt(label_file, dtype=np.float32))
+    x_test = np.loadtxt(gisette_dir / "gisette_test.data", dtype=np.float32)
+    parts.append(x_test)
+    labels.append(np.zeros(x_test.shape[0], dtype=np.float32))
+    x = np.vstack(parts).astype(np.float32)
+    y = np.concatenate(labels).astype(np.float32)
+    feature_names = [f"pixel_{i}" for i in range(x.shape[1])]
     return x, y, feature_names, {"dropped_rows": 0}
 
 
 LOADERS = {
     "Wine": _load_wine,
     "Concrete": _load_concrete,
-    "Libras": _load_libras,
     "Breast": _load_breast,
-    "Superconductivity": _load_superconductivity,
-    "GasSensorDrift": _load_gas_sensor_drift,
-    "HAR_AAL": _load_har_aal,
+    "Gisette": _load_gisette,
 }
 
 
@@ -270,14 +196,19 @@ def stage_real_dataset(dataset_name: str, force: bool = False) -> dict:
     if metadata_path.exists() and not force:
         return json.loads(metadata_path.read_text(encoding="utf-8"))
 
-    zip_path = raw_dir / f"uci_{spec['uci_id']}.zip"
-    url = f"https://archive.ics.uci.edu/static/public/{spec['uci_id']}/{spec['slug']}.zip"
-    if force or not zip_path.exists():
-        _download_zip(url, zip_path)
-    if force or not extracted_dir.exists() or not any(extracted_dir.iterdir()):
-        _extract_zip(zip_path, extracted_dir)
+    if spec["uci_id"] is not None:
+        zip_path = raw_dir / f"uci_{spec['uci_id']}.zip"
+        url = f"https://archive.ics.uci.edu/static/public/{spec['uci_id']}/{spec['slug']}.zip"
+        if force or not zip_path.exists():
+            _download_zip(url, zip_path)
+        if force or not extracted_dir.exists() or not any(extracted_dir.iterdir()):
+            _extract_zip(zip_path, extracted_dir)
+        loader_path = extracted_dir
+    else:
+        url = None
+        loader_path = raw_dir
 
-    x, y, feature_names, extra_metadata = LOADERS[canonical](extracted_dir)
+    x, y, feature_names, extra_metadata = LOADERS[canonical](loader_path)
     x = np.asarray(x, dtype=np.float32)
     y = np.asarray(y, dtype=np.float32)
 
@@ -345,9 +276,17 @@ def prepare_real_benchmark_data(
     if metadata_path.exists() and not force and (benchmark_dir / "x_full_norm.npy").exists() and (benchmark_dir / "x_obs_norm.npy").exists():
         return load_real_benchmark_data(canonical, missing_rate=missing_rate, seed=seed)
 
+    spec = DATASET_REGISTRY[canonical]
+    skip_norm = spec.get("skip_normalization", False)
+
     x_full_original = np.load(processed_dir / "X_full_original.npy").astype(np.float32)
-    scaler = StandardScaler()
-    x_full_norm = scaler.fit_transform(x_full_original).astype(np.float32)
+
+    if skip_norm:
+        x_full_norm = x_full_original.copy()
+        scaler = None
+    else:
+        scaler = StandardScaler()
+        x_full_norm = scaler.fit_transform(x_full_original).astype(np.float32)
 
     mask = simulate_real_mnar_mask(x_full_norm, missing_rate=missing_rate, seed=seed)
     x_obs_norm = x_full_norm.copy()
@@ -364,6 +303,16 @@ def prepare_real_benchmark_data(
             stale_path.unlink()
 
     processed_metadata = json.loads((processed_dir / "metadata.json").read_text(encoding="utf-8"))
+
+    if skip_norm:
+        normalization_info = {"method": "none", "reason": "data is pre-normalized"}
+    else:
+        normalization_info = {
+            "method": "StandardScaler",
+            "mean": scaler.mean_.astype(np.float32).tolist(),
+            "scale": scaler.scale_.astype(np.float32).tolist(),
+        }
+
     metadata = {
         "dataset": canonical,
         "missing_rate": float(missing_rate),
@@ -376,13 +325,9 @@ def prepare_real_benchmark_data(
         "original_max": float(np.max(x_full_original)),
         "norm_min": float(np.nanmin(x_full_norm)),
         "norm_max": float(np.nanmax(x_full_norm)),
-        "should_standardize": True,
+        "should_standardize": not skip_norm,
         "actual_missing_rate": float(1.0 - mask.mean()),
-        "normalization": {
-            "method": "StandardScaler",
-            "mean": scaler.mean_.astype(np.float32).tolist(),
-            "scale": scaler.scale_.astype(np.float32).tolist(),
-        },
+        "normalization": normalization_info,
     }
     _write_json(metadata_path, metadata)
     return load_real_benchmark_data(canonical, missing_rate=missing_rate, seed=seed)
