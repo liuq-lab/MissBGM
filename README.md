@@ -14,12 +14,10 @@ MissBGM is a missingness-aware Bayesian generative model for imputing data with 
 ## Model overview
 
 <p align="center">
-  <a href="https://github.com/liuq-lab/MissBGM/blob/main/assets/fig1.pdf">
-    <img src="https://raw.githubusercontent.com/liuq-lab/MissBGM/main/assets/fig1.png" width="850" alt="MissBGM model overview (Figure 1)" />
-  </a>
+  <img src="https://raw.githubusercontent.com/liuq-lab/MissBGM/main/assets/model.png" width="850" alt="MissBGM model overview" />
 </p>
 <p align="center">
-  <em>Figure 1: MissBGM model overview. If the PDF does not render inline on GitHub, click the figure to open <code>fig1.pdf</code>.</em>
+  <em>MissBGM model overview.</em>
 </p>
 
 ## Installation
