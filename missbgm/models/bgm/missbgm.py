@@ -29,10 +29,9 @@ class MissBGM(BGM):
     def __init__(
         self,
         params: dict,
-        timestamp: Optional[str] = None,
         random_seed: Optional[int] = None,
     ) -> None:
-        super().__init__(params=params, timestamp=timestamp, random_seed=random_seed)
+        super().__init__(params=params, random_seed=random_seed)
 
         self.rng = np.random.default_rng() if random_seed is None else np.random.default_rng(random_seed)
         self.egm_params = self.params["egm_init"]
@@ -49,26 +48,6 @@ class MissBGM(BGM):
         self.z_optimizer = tf.keras.optimizers.Adam(self.params["lr_z"], beta_1=0.9, beta_2=0.99)
         self.x_optimizer = tf.keras.optimizers.Adam(self.params["lr_x"], beta_1=0.9, beta_2=0.99)
         self.phi_optimizer = tf.keras.optimizers.Adam(self.params["lr_phi"], beta_1=0.9, beta_2=0.99)
-
-        self.ckpt = tf.train.Checkpoint(
-            g_net=self.g_net,
-            e_net=self.e_net,
-            dz_net=self.dz_net,
-            dx_net=self.dx_net,
-            phi_net=self.phi_net,
-            g_pre_optimizer=self.g_pre_optimizer,
-            d_pre_optimizer=self.d_pre_optimizer,
-            g_optimizer=self.g_optimizer,
-            z_optimizer=self.z_optimizer,
-            x_optimizer=self.x_optimizer,
-            phi_optimizer=self.phi_optimizer,
-        )
-        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.checkpoint_path, max_to_keep=100)
-        if self.ckpt_manager.latest_checkpoint:
-            self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
-
-    def get_config(self) -> dict:
-        return {"params": self.params}
 
     @tf.function
     def _generator_nll(
@@ -211,9 +190,9 @@ class MissBGM(BGM):
         if x_obs.shape[1] != self.params["x_dim"]:
             raise ValueError(f"Expected feature dimension {self.params['x_dim']}, received {x_obs.shape[1]}.")
 
-        if self.params["save_res"]:
-            os.makedirs(self.save_dir, exist_ok=True)
-            with open(os.path.join(self.save_dir, "params.txt"), "w", encoding="utf-8") as handle:
+        if self.params["save_dir"] is not None:
+            os.makedirs(self.params["save_dir"], exist_ok=True)
+            with open(os.path.join(self.params["save_dir"], "params.txt"), "w", encoding="utf-8") as handle:
                 handle.write(json.dumps(self.get_config(), indent=2))
 
         if self.egm_params["enabled"]:
@@ -231,7 +210,6 @@ class MissBGM(BGM):
         self.data_z = tf.Variable(z_init, name="LatentZ", trainable=True)
         self.data_x = tf.Variable(x_obs, name="CompletedX", trainable=True)
         self.training_history_ = []
-        self.last_prediction_ = None
         n_rows = x_obs.shape[0]
         batch_size = min(self.params["batch_size"], n_rows)
 
@@ -299,8 +277,11 @@ class MissBGM(BGM):
                         )
                     )
 
-        if self.params["save_res"]:
-            pd.DataFrame(self.training_history_).to_csv(os.path.join(self.save_dir, "training_history.csv"), index=False)
+        if self.params["save_dir"] is not None:
+            pd.DataFrame(self.training_history_).to_csv(os.path.join(self.params["save_dir"], "training_history.csv"), index=False)
+            
+        self.x_map_imputed_ = reconstruct_from_mask(x_obs,resolved_mask,self.data_x.numpy())
+        self.z_map_ = self.data_z.numpy()
         return self
 
     def _run_map_inference(
@@ -597,7 +578,7 @@ class MissBGM(BGM):
         seed: int = 42,
         verbose: int = 1,
     ):
-        x_obs, resolved_mask = prepare_masked_data(data, mask=mask, initialization="mean")
+        x_obs, resolved_mask = prepare_masked_data(data, mask=mask, initialization="knn")
 
         if x_obs.shape[1] != self.params["x_dim"]:
             raise ValueError(f"Expected feature dimension {self.params['x_dim']}, received {x_obs.shape[1]}.")
@@ -632,7 +613,6 @@ class MissBGM(BGM):
             return_samples=return_samples,
             verbose=verbose,
         )
-        self.last_prediction_ = outputs
 
         if return_samples:
             return outputs["x_samples"], outputs["intervals"]
