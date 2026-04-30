@@ -32,7 +32,7 @@ DATASET_REGISTRY: Dict[str, dict] = {
         "features": 8,
         "num_categorical_or_binary_features": 0,
         "notes": ["Uses Concrete_Data.xls. Drops the target strength column and keeps the 8 numeric predictors."],
-    }
+    },
     "Breast": {
         "uci_id": 15,
         "slug": "breast+cancer+wisconsin+original",
