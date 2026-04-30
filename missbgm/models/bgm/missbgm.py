@@ -78,7 +78,7 @@ class MissBGM(BGM):
         training: bool = False,
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         mu_x, sigma_square_x = self.g_net(data_z, training=training)
-        sigma_square_x = tf.clip_by_value(sigma_square_x, 1e-6, 1e6)
+
         nll = tf.reduce_sum(
             ((data_x - mu_x) ** 2) / (2.0 * sigma_square_x) + 0.5 * tf.math.log(sigma_square_x),
             axis=1,
