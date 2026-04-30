@@ -1,23 +1,23 @@
-dataset: Superconductivity
+dataset: Gisette
 output_dir: .
 save_model: false
 save_res: false
 use_bnn: false
-x_dim: 81
+x_dim: 5000
 z_dim: 10
-batch_size: 16
+batch_size: 32
 epochs: 200
-epochs_per_eval: 5
+epochs_per_eval: 2
 lr: 0.002
-lr_theta: 0.001
-lr_phi: 0.001
+lr_theta: 0.005
+lr_phi: 0.005
 lr_z: 0.002
 lr_x: 0.002
 alpha: 0.0
 beta: 0.1
 gamma: 0.0
 kl_weight: 0.00005
-n_inner_steps: 10
+n_inner_steps: 3
 g_d_freq: 1
 seed: 123
 g_units: [120, 120, 120, 120, 120]
@@ -27,7 +27,7 @@ dx_units: [64, 32, 8]
 missingness_units: [64, 64]
 egm_init:
   enabled: true
-  n_iter: 1500
+  n_iter: 5000
   batches_per_eval: 500
 posterior:
   test_epochs: 30

@@ -6,20 +6,20 @@ use_bnn: false
 n_samples: 5000
 x_dim: 50
 z_dim: 5
-missing_rate: 0.1
+missing_rate: 0.2
 batch_size: 16
-epochs: 100
+epochs: 500
 epochs_per_eval: 2
 lr: 0.002
-lr_theta: 0.001
-lr_phi: 0.001
+lr_theta: 0.005
+lr_phi: 0.005
 lr_z: 0.002
 lr_x: 0.002
 alpha: 0.0
 beta: 0.1
 gamma: 0.0
 kl_weight: 0.00005
-n_inner_steps: 10
+n_inner_steps: 3
 g_d_freq: 1
 seed: 123
 g_units: [120, 120, 120, 120, 120]
