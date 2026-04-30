@@ -2,7 +2,7 @@
 
 Missingness-aware data imputation with Bayesian generative modeling and uncertainty quantification.
 
-MissBGM is a missingness-aware Bayesian generative model for imputing data with **non-ignorable missingness** (Missing Not At Random, MNAR). It jointly models the **data-generating process** and the **missingness mechanism**, enabling both accurate imputations and principled uncertainty quantification via posterior sampling.
+MissBGM is a missingness-aware Bayesian generative model for imputing data with potential **non-ignorable missingness** (Missing Not At Random, MNAR). It jointly models the **data-generating process** and the **missingness mechanism**, enabling both accurate imputations and principled uncertainty quantification via posterior sampling.
 
 ## Highlights
 
@@ -145,7 +145,7 @@ For each run:
 - **Loads config** from YAML (e.g., `configs/Real_Wine.yaml`)
 - **Prepares data**
   - Synthetic: calls `simulate_mnar_oracle_data(...)`
-  - Real: calls `prepare_real_benchmark_data(dataset_name, missing_rate=..., seed=..., force=...)`
+  - Real: calls `prepare_real_benchmark_data(...)`
 - **Trains** `MissBGM.fit(...)`
 - **Computes MAP imputation** via `model.x_map_imputed_`
 - **Draws posterior samples** via `model.predict(...)` to get:
@@ -157,23 +157,22 @@ For each run:
 
 ```text
 missbgm/
-  datasets/        # synthetic simulators + real dataset staging / preprocessing
-  models/          # BGM base model + MissBGM
-  utils/           # masking, baselines, metrics, prediction intervals
+  datasets/        # synthetic and real dataset preparing / preprocessing
+  models/          # MissBGM implementation
+  utils/           # utility functions
 configs/           # YAML configs for experiments
-main.py            # experiment entrypoint (simulation + real benchmarks)
+main.py            # main script to run the experiments
 ```
 
 ## Citation
 
-If you use MissBGM in your research, please cite our paper (arXiv link coming soon):
+If you use MissBGM in your research, please cite our paper:
 
 ```bibtex
 @misc{missbgm2026,
-  title        = {MissBGM: Missingness-Aware Bayesian Generative Modeling for MNAR Imputation},
-  author       = {TBD},
+  title        = {MissBGM: Missingness-aware Data Imputation via AI-powered Bayesian Generative Modeling with Uncertainty Quantification},
+  author       = {Qiao Liu},
   year         = {2026},
-  eprint       = {TBD},
   archivePrefix= {arXiv},
   primaryClass = {stat.ML}
 }
