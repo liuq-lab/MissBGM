@@ -58,7 +58,7 @@ class BaseVariationalNet(tf.keras.Model):
         self.mean_layer = tf.keras.layers.Dense(units=self.output_dim, activation=None)
         self.var_layer = tf.keras.layers.Dense(units=self.output_dim, activation=None)
 
-    def call(self, inputs, eps=1e-6, training=True):
+    def call(self, inputs, eps=1e-4, training=True):
         x = self.norm_layer(tf.cast(inputs, tf.float32), training=training)
         for dense in self.hidden_layers:
             x = dense(x)
