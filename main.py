@@ -1,15 +1,10 @@
 import argparse
-import json
-from pathlib import Path
-
-import numpy as np
-import pandas as pd
 import yaml
 
 from missbgm.datasets import prepare_real_benchmark_data, resolve_dataset_name
 from missbgm.datasets import simulate_mnar_oracle_data
 from missbgm.models import MissBGM
-from missbgm.utils import benchmark_mnar_imputers, rmse_on_missing_entries
+from missbgm.utils import rmse_on_missing_entries
 
 
 def run_synthetic_experiment(params: dict) -> dict:
