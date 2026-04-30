@@ -14,10 +14,10 @@ MissBGM is a missingness-aware Bayesian generative model for imputing data with 
 ## Model overview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/liuq-lab/MissBGM/main/assets/model.png" width="850" alt="MissBGM model overview" />
+  <img src="https://raw.githubusercontent.com/liuq-lab/MissBGM/main/assets/model.png" width="800" alt="MissBGM model overview" />
 </p>
 <p align="center">
-  <em>MissBGM model overview.</em>
+  <em>Figure. MissBGM model overview.</em>
 </p>
 
 ## Installation
@@ -44,12 +44,11 @@ pip install missbgm
 
 ### Dependencies
 
-This project is tested with:
+This project is tested in a `python 3.12` Linux environment with:
 
-- Python **3.12**
-- TensorFlow **2.18.0**
-- TensorFlow Probability **0.25.0**
+- `tensorflow==2.18.0`
 - `tf-keras==2.18.0`
+- `tensorflow-probability==0.25.0`
 - `numpy`, `pandas`, `pyyaml`, `scikit-learn`
 
 ## Quickstart (Python API)
