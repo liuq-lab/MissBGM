@@ -428,7 +428,7 @@ class MissBGM(BGM):
             candidate_full = reconstruct_from_mask(x_obs_tf, mask_tf, candidate_x)
             return -(
                 self._generator_nll(z_for_x, candidate_full, training=False)[0]
-                + self._mask_nll(candidate_full, mask_tf, training=False)
+                + self.params["beta"] * self._mask_nll(candidate_full, mask_tf, training=False)
             )
 
         def make_adaptive_hmc_kernel(target_log_prob_fn):
