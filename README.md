@@ -80,7 +80,7 @@ model = MissBGM(params, random_seed=42)
 # Train the MissBGM model
 model.fit(data=data["x_obs"], mask=data["mask"], x_true=data["x_full"], verbose=1)
 
-# Get the MAP imputation
+# Get the MAP imputation (default point estimate)
 map_imputed = model.x_map_imputed_
 
 # Make posterior predictions with uncertainty quantification
@@ -169,7 +169,7 @@ If you use MissBGM in your research, please cite our paper:
 
 ```bibtex
 @misc{missbgm2026,
-  title        = {MissBGM: Missingness-aware Data Imputation via AI-powered Bayesian Generative Modeling with Uncertainty Quantification},
+  title        = {MissBGM: Missingness-aware Data Imputation via AI-powered Bayesian Generative Modeling},
   author       = {Qiao Liu},
   year         = {2026},
   archivePrefix= {arXiv},
